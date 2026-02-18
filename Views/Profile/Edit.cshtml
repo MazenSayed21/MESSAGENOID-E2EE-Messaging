@@ -1,0 +1,56 @@
+﻿@model MESSAGENOID.Models.ViewModels.EditProfileVM
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Edit Your Profile</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
+
+                        <div class="mb-3 text-center">
+                            <img id="imgPreview" src="@(Model.profilePic ?? "https://via.placeholder.com/120")"
+                                 class="rounded-circle border mb-2" style="width: 120px; height: 120px; object-fit: cover;" />
+                            <p class="text-muted small">Profile Preview</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="displayName" class="form-label fw-bold"></label>
+                            <input asp-for="displayName" class="form-control" placeholder="How would you like others to see your name?" />
+                            <span asp-validation-for="displayName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="profilePic" class="form-label fw-bold"></label>
+                            <input asp-for="profilePic" id="urlInput" class="form-control" placeholder="https://example.com/image.jpg" />
+                            <span asp-validation-for="profilePic" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="bio" class="form-label fw-bold"></label>
+                            <textarea asp-for="bio" class="form-control" rows="4" placeholder="Tell others about yourself..."></textarea>
+                            <span asp-validation-for="bio" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary rounded-pill py-2">Save Changes</button>
+                            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill py-2">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Simple JS to update the preview image when the URL changes
+        document.getElementById('urlInput').addEventListener('input', function() {
+            document.getElementById('imgPreview').src = this.value || 'https://via.placeholder.com/120';
+        });
+    </script>
+}

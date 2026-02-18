@@ -1,0 +1,92 @@
+﻿@model MESSAGENOID.Models.ViewModels.RegisterVM
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">Create Account</h2>
+                    
+                    <form id="registerForm" asp-action="Register" asp-controller="Auth" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <input type="hidden" asp-for="PublicKey" id="publicKeyHidden" />
+
+                        <div class="mb-3">
+                            <label asp-for="userName" class="form-label">Full Name</label>
+                            <input asp-for="userName" class="form-control" placeholder="How should we call you?" />
+                            <span asp-validation-for="userName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email" class="form-control" placeholder="name@college.edu" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Password" class="form-label">Password</label>
+                                <input asp-for="Password" class="form-control" type="password" />
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+                           
+                        </div>
+
+                        <div id="cryptoStatus" class="alert alert-info d-none">
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                            Generating secure encryption keys...
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg w-100 mt-3" id="btnSubmit">
+                            Secure Register
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/CryptoHelper.js"></script>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function (e) {
+            e.preventDefault(); // Stop form to generate keys first
+            
+            const form = this;
+            if (!$(form).valid()) return; // Don't run crypto if form is invalid
+
+            const btn = document.getElementById('btnSubmit');
+            const status = document.getElementById('cryptoStatus');
+
+            // UI Feedback
+            btn.disabled = true;
+            status.classList.remove('d-none');
+
+            try {
+                // 1. Generate the RSA Key Pair (Using our crypto-helper.js)
+                const keyPair = await generateKeyPair();
+
+                // 2. Export keys to strings
+                const pubKeyString = await exportKey(keyPair.publicKey);
+                const privKeyString = await exportKey(keyPair.privateKey);
+
+                // 3. Save Private Key locally (Browser only!)
+                localStorage.setItem('user_private_key', privKeyString);
+
+                // 4. Put Public Key in hidden input for C#
+                document.getElementById('publicKeyHidden').value = pubKeyString;
+
+                // 5. Submit the form to the server
+                form.submit();
+            } catch (err) {
+                console.error("Encryption failed:", err);
+                alert("Could not generate secure keys. Please try again.");
+                btn.disabled = false;
+            }
+        });
+    </script>
+}

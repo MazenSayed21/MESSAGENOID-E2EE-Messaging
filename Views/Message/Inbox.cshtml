@@ -1,0 +1,63 @@
+﻿@model IEnumerable<MESSAGENOID.Models.Message>
+
+<div id="inbox">
+    @if (Model == null || !Model.Any())
+    {
+        <div class="text-center py-5">
+            <div class="mb-3">
+                <i class="bi bi-chat-dots text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+            </div>
+            <h5 class="text-secondary fw-bold">Your inbox is empty</h5>
+            <p class="text-muted mx-auto" style="max-width: 300px;">
+                Start a secure, anonymous conversation by searching for other decision-makers!
+            </p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary rounded-pill px-4 mt-2">
+                <i class="bi bi-search me-2"></i>Find Students
+            </a>
+        </div>
+    }
+    @foreach (var msg in Model)
+    {
+        <div class="message-card">
+            <span class="cipher-text d-none">@msg.content</span>
+
+            <p class="decrypted-display">Decrypting...</p>
+
+            <small>@msg.time_stamp</small>
+        </div>
+    }
+</div>
+
+<script src="/js/CryptoHelper.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        // 1. Grab the private key
+        const privKey = localStorage.getItem("user_private_key");
+
+        if (!privKey) {
+            console.error("No private key found in localStorage.");
+            document.querySelectorAll('.decrypted-display').forEach(el => {
+                el.innerText = "Error: Private key missing on this device.";
+            });
+            return;
+        }
+
+        // 2. Loop through every message card
+        document.querySelectorAll('.message-card').forEach(async (card) => {
+            const cipherText = card.querySelector('.cipher-text').innerText.trim();
+            const display = card.querySelector('.decrypted-display');
+
+            try {
+                // 3. IMPORTANT: Use 'decryptMessage' (the name in your crypto-helper.js)
+                const clearText = await decryptMessage(privKey, cipherText);
+                display.innerText = clearText;
+
+                // Optional: Hide the gibberish once decrypted
+                card.querySelector('.cipher-text').style.display = 'none';
+            } catch (e) {
+                console.error("Decryption failed for a message:", e);
+                display.innerText = "Error: Key mismatch or message corrupted.";
+            }
+        });
+    });
+</script>

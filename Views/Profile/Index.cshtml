@@ -1,0 +1,85 @@
+﻿@model MESSAGENOID.Models.ViewModels.profileVM;
+
+@{
+    ViewData["Title"] = "Profile - " + Model.DisplayName;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card shadow border-0 overflow-hidden">
+                <div class="bg-primary" style="height: 100px;"></div>
+
+                <div class="card-body text-center position-relative" style="margin-top: -60px;">
+                    <div class="mb-3">
+                        @if (!string.IsNullOrEmpty(Model.ProfilePicUrl))
+                        {
+                            <img src="@Model.ProfilePicUrl"
+                                 class="rounded-circle border border-4 border-white shadow-sm"
+                                 style="width: 120px; height: 120px; object-fit: cover;"
+                                 alt="Profile Image">
+                        }
+                        else
+                        {
+                            <div class="rounded-circle bg-light border border-4 border-white shadow-sm d-flex align-items-center justify-content-center mx-auto"
+                                 style="width: 120px; height: 120px;">
+                                <i class="bi bi-person-fill text-secondary" style="font-size: 3.5rem;"></i>
+                            </div>
+                        }
+                    </div>
+
+                    <h2 class="fw-bold mb-0">@(Model.DisplayName ?? "Anonymous")</h2>
+                    <p class="text-muted mb-3">
+                        <i class="bi bi-envelope-at"></i> @Model.Email
+                    </p>
+
+                    <div class="d-flex justify-content-center gap-2 mb-4">
+                        @if (Model.IsOwnProfile)
+                        {
+                            <a asp-action="Edit" class="btn btn-primary px-4 rounded-pill">
+                                <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Message" asp-action="Chat" asp-route-receiverId="@Model.Id"
+                               class="btn btn-outline-primary px-4 rounded-pill">
+                                <i class="bi bi-chat-dots me-2"></i>Send Message
+                            </a>
+                        }
+                    </div>
+
+                    <hr class="mx-4 opacity-10">
+
+                    <div class="text-start px-4 mt-4">
+                        <h6 class="text-uppercase text-muted fw-bold small mb-2">About / Bio</h6>
+                        <div class="p-3 bg-light rounded-3">
+                            <p class="mb-0 italic text-dark">
+                                @(string.IsNullOrWhiteSpace(Model.Bio)
+                                                                ? "NO Bio exists!"
+                                                                : Model.Bio)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-0 text-center pb-4">
+                    <small class="text-muted italic">MESSAGENOID Protected Profile</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<form class="d-flex mx-auto col-12 col-lg-5 mb-2 mb-lg-0" asp-controller="Search" asp-action="searchResults" method="get">
+    <div class="input-group">
+        <span class="input-group-text bg-white border-end-0">
+            <i class="bi bi-search text-muted"></i>
+        </span>
+        <input class="form-control border-start-0 ps-0"
+               type="search"
+               name="userName"
+               placeholder="Search users by name or email..."
+               aria-label="Search">
+        <button class="btn btn-primary px-4" type="submit">Search</button>
+    </div>
+</form>

@@ -1,0 +1,59 @@
+﻿@model MESSAGENOID.Models.ViewModels.LoginVM
+
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">Sign In</h2>
+                    
+                    @* Note: asp-controller matches your AuthenticationController *@
+                    <form asp-action="Login" asp-controller="Auth" method="post">
+                        
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="email" class="form-control" id="emailInput" placeholder="name@example.com">
+                            <label asp-for="email">Email address</label>
+                            <span asp-validation-for="email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="passWord" class="form-control" id="passwordInput" placeholder="Password">
+                            <label asp-for="passWord">Password</label>
+                            <span asp-validation-for="passWord" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input asp-for="rememberMe" class="form-check-input" />
+                            <label asp-for="rememberMe" class="form-check-label">Remember me on this device</label>
+                        </div>
+
+                        <button class="btn btn-primary btn-lg w-100 mb-3" type="submit">Login</button>
+                        
+                        <div class="text-center">
+                            <p class="mb-0 text-muted">New to the platform? <a asp-action="Register" class="text-primary text-decoration-none">Create an account</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            @* Visual hint for the E2EE part of your project *@
+            <div class="text-center mt-4">
+                <p class="text-muted small">
+                    <i class="bi bi-shield-lock-fill"></i> 
+                    Your messages are protected with End-to-End Encryption.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* This enables client-side validation using jQuery *@
+    <partial name="_ValidationScriptsPartial" />
+}

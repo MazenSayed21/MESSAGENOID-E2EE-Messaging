@@ -1,0 +1,147 @@
+﻿@model MESSAGENOID.Models.ViewModels.ChatVM;
+
+@{
+    ViewData["Title"] = "Secure Chat with " + Model.ReceiverName;
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-lg border-0" style="height: 85vh; display: flex; flex-direction: column;">
+
+                <div class="card-header bg-primary text-white py-3 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <a asp-controller="Message" asp-action="Inbox" class="text-white me-3 text-decoration-none">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                        <div class="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center fw-bold shadow-sm"
+                             style="width: 45px; height: 45px; font-size: 1.2rem;">
+                            @(Model.ReceiverName?[0].ToString().ToUpper() ?? "?")
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="mb-0 fw-bold">@Model.ReceiverName</h6>
+                            <small class="opacity-75"><i class="bi bi-shield-lock-fill"></i> End-to-End Encrypted</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body bg-light overflow-auto p-4" id="chatWindow" style="flex: 1;">
+                    <div class="text-center mb-4">
+                        <span class="badge bg-white text-muted border py-2 px-3 rounded-pill shadow-sm">
+                            <i class="bi bi-info-circle me-1 text-primary"></i>
+                            Messages are encrypted using the recipient's public key.
+                        </span>
+                    </div>
+
+                    <div id="messagesList">
+                        @* Future Tip: You'll likely loop through your messages here.
+                           Example: @foreach(var msg in Model.Messages) { ... } 
+                        *@
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-top p-3">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show small py-2" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form id="encryptionForm" asp-controller="Message" asp-action="Chat" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="reciever_id" id="reciever_id" value="@Model.reciever_id" />
+                        <input type="hidden" id="receiverPubKey" value="@Model.ReceiverPublicKey" />
+
+                        <div class="input-group shadow-sm rounded-pill overflow-hidden border">
+                            <input type="text" id="plainTextMessage" name="content"
+                                   class="form-control border-0 px-4 py-2"
+                                   placeholder="Type an anonymous, secure message..."
+                                   required autocomplete="off">
+                            <button class="btn btn-primary px-4" type="submit" id="btnSend">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
+                        </div>
+                    </form>
+                    <p class="text-center text-muted mt-2 mb-0" style="font-size: 0.75rem;">
+                        <i class="bi bi-incognito"></i> Your identity remains anonymous to the recipient.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom Scrollbar for the Chat Window */
+    #chatWindow::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    #chatWindow::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    #chatWindow::-webkit-scrollbar-thumb {
+        background: #cbd5e0;
+        border-radius: 10px;
+    }
+
+    #chatWindow {
+        scroll-behavior: smooth;
+    }
+
+    .card {
+        border-radius: 20px;
+    }
+</style>
+
+@section Scripts {
+    <script src="/js/CryptoHelper.js"></script>
+    <script>
+                document.getElementById('encryptionForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const messageInput = document.getElementById('plainTextMessage');
+            // .trim() removes any invisible spaces coming from the server
+            const pubKey = document.getElementById('receiverPubKey').value.trim();
+            const originalText = messageInput.value.trim();
+
+            if (!originalText) return;
+
+            if (!pubKey) {
+                alert("Error: Recipient key is missing.");
+                return;
+            }
+
+            try {
+                const btn = document.getElementById('btnSend');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                // Log to console so you can inspect the key if it fails
+                console.log("Attempting encryption with key:", pubKey);
+
+                // Ensure the order is (Key, Text)
+                const encryptedString = await encryptMessage(pubKey, originalText);
+
+                messageInput.value = encryptedString;
+                this.submit();
+
+            } catch (error) {
+                // This is the most important part for debugging
+                console.error("ENCRYPTION ERROR DETAILS:", error);
+
+                // This alert will now tell us the EXACT technical reason
+                alert("Encryption Failed: " + error.name + "\nCheck the browser console (F12) for details.");
+
+                const btn = document.getElementById('btnSend');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send-fill"></i>';
+            }
+        });
+    </script>
+}
